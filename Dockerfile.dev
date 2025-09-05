@@ -1,0 +1,54 @@
+# in practice you'll want to nail down the particular OS version, not just use :latest
+FROM docker.reposerver-eg-artifactory.dev.example.com/ubuntu:latest
+
+# Set the default shell to bash
+SHELL ["/bin/bash", "-c"]
+
+# acquire env from the env present when docker/docker-compose/devcontainer/vscode started
+ARG CREDENTIAL_FROM_DEV_ENV
+ENV CREDENTIAL_FROM_DEV_ENV=${CREDENTIAL_FROM_DEV_ENV}
+
+# Update base image
+RUN apt-get update -y && apt-get install -y build-essential
+
+# acquire these from the docker compose override file
+ARG USERNAME=container-user
+ARG UID=1000
+ARG GID=1000
+
+# set up groups with the same numeric ids as the host system
+RUN groupadd -o -g $GID group_$GID
+RUN useradd -o -p '' -u $UID -G group_$GID -N $USERNAME
+
+# grant sudo to the user otherwise they'll be powerless in their own container
+# there are cloud implementations of this concept that have to be more specific about permissions
+RUN echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers
+
+# everything henceforth is as the user
+USER $USERNAME:group_$GID
+
+# a place to acquire things from the host
+RUN mkdir /tmp/host
+
+# install things as the user in their home
+WORKDIR /home/$USERNAME
+
+# Set up for the app - e.g. install python requirements
+COPY requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
+
+# because the devcontainer is both a development environment and a running app, we need to set up the shell
+# here's how to do it with zsh (base container only has bash)
+RUN sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+RUN echo "source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >> ~/.zshrc && \
+echo "source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh" >> ~/.zshrc
+
+# Change default shell to zsh
+RUN sudo chsh -s /bin/zsh $USERNAME
+# there is some stuff to do got pre-commit if you use it bu
+
+# Install some global packages
+RUN source /opt/nvm/nvm.sh && nvm install 20 && npm install -g yarn
+
+# be immortal
+ENTRYPOINT sleep infinity

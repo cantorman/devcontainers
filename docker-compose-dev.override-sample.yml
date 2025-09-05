@@ -1,0 +1,6 @@
+services:
+  application-devcontainer:
+    build:
+      args:
+        - UID=1000
+        - GID=10

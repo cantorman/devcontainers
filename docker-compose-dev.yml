@@ -1,0 +1,28 @@
+networks:
+  default:
+    driver: bridge
+
+services:
+  application-devcontainer:
+    build:
+      context: .
+      args:
+        - CREDENTIAL_FROM_DEV_ENV=${CREDENTIAL_FROM_DEV_ENV}
+        # etc
+      dockerfile: Dockerfile.dev
+    volumes:
+      # mount user's home dir into the devcontainer
+      - "./:/application:rw"
+      # this is the magic.
+      # create a persistent volume for node_modules, otherwise it'll reinstall every time the container rebuilds.
+      # container rebuilds must happen every time there is a git pull, so this was a problem till I invented this fix.
+      # container startup times after git pull went from 15 minutes of node_install to under 10 seconds
+      # ask me about Mobbing :)
+      - devcontainer_node_modules:/application/application/node_modules
+    env_file:
+      # a way to get local values into the devcontainer
+      - devcontainer.env
+
+volumes:
+  # define local persistent volume
+  devcontainer_node_modules:

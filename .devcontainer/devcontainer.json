@@ -1,0 +1,40 @@
+{
+	// for details beyond what I provide here, see https://containers.dev (project page),
+	// https://containers.dev/implementors/spec/, and 
+	// particularly https://containers.dev/implementors/spec/#devcontainerjson
+
+	// this is the setup and orchestration for the devcontainer, which in this case relies on docker compose
+	"name": "application",
+
+	"forwardPorts": [7007, 3000],
+
+	// first the compose file, then the override file with the uid and gid from the host system
+	"dockerComposeFile": ["../docker-compose-dev.yml", "../docker-compose-dev.override.yml"],
+	"service": "application-devcontainer", // Service name used in the docker-compose file
+	"workspaceFolder": "/application",
+	// here we mount some of the user's home dir config into the devcontainer
+	"mounts": [
+		"type=bind,source=~/.gitconfig,target=/tmp/host/gitconfig",
+		"type=bind,source=~/.aws,target=/tmp/host/dot-aws",
+		// this mounts the setup scripts where they can be seen during devcontainer init
+		"type=bind,source=${localWorkspaceFolder}/.devcontainer/config-container.sh,target=/tmp/host/config-container.sh"
+	],
+
+	// orchestration
+	"initializeCommand": [".devcontainer/create-compose-override.sh", ".devcontainer/setup-devcontainer-env.sh" ],
+	"postCreateCommand": ["/tmp/host/config-container.sh"],
+
+	// vscode has devcontainer support.  It will run a server inside the development container to
+	// synchronize with the UI.  these plugins will be available within the container:
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"yuichinukiyama.vscode-preview-server",
+				"ms-azuretools.vscode-docker",
+			],
+			"settings": {
+				"extensions.verifySignature": false
+			}
+		}
+	}
+}

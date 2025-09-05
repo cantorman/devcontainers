@@ -1,0 +1,2 @@
+# for example you'll want this for AWS based apps
+awscli
