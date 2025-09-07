@@ -63,7 +63,7 @@ The filesystem permissions have to be set right or you won't be able to edit fil
 * The user's home dir `~/.aws` on the laptop: mounted into a path under /tmp in the container so that `config-container.sh` can symlink it in the the _devcontainers_ user home dir 
 * The user's home dir `~/.gitconfig` on the laptop: mounted into a (different) path under /tmp in the container so that `config-container.sh` can copy it to the the _devcontainer's_ user home dir as their ~/.gitconfig, where it can be updated as needed.  This allows simple `.gitconfig` settings to be propagated into the container - remotes, aliases, branchs, etc.
 * `config-container.sh` in the laptop source: mounted to yet another path in /tmp where it can be findable during the boot sequencing.
-* `Dockerfile.dev` - This is the dockerfile from which the devcontainer is built.  Among other things, it consumes the User and Group IDs from the laptop and ensures they exist in the container.  It also uses an ENTRYPOINT that does `sleep infinity` so that the container only exits when told to do so.
+* `Dockerfile.dev` - This is the dockerfile from which the devcontainer is built.  Among other things, it consumes the User and Group IDs from the laptop and ensures they exist in the container.  It also uses an `ENTRYPOINT` that does `sleep infinity` so that the container only exits when told to do so.
 
 ## Other Files
 The rest of the files and directories you see - `application/Dockerfile`, `.gitignore`, `.dockerignore`, `package.json` are basically illustrative placeholders that point to a more fleshed out project.  It is important to note that since all these are in source control, the resultant environment is completely reproducible (except of course for things like secrets) 
